@@ -5,44 +5,29 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../entities/post_entity.dart';
 
 class PostCommentsState extends ChangeNotifier {
-  /// ------------------- DECLARATIONS ---------------------------
+  PostCommentsState({
+    required PostEntity post,
+  }) {
+    _postEntity = post;
+    commentController.addListener(notifyListeners);
+  }
 
-  final _commentList = <CommentEntity>[
-    CommentEntity(
-      contentComment: 'Que postagem motivadora!',
-      userEntity: UserEntity(
-        username: 'LINCE TECH',
-      ),
-      commentDate: DateTime.now(),
-    ),
-    CommentEntity(
-      contentComment: 'Muito legal!',
-      userEntity: UserEntity(
-        username: 'Paytrack',
-      ),
-      commentDate: DateTime.now(),
-    ),
-    CommentEntity(
-      contentComment: 'Uau!',
-      userEntity: UserEntity(
-        username: 'SYYNC',
-      ),
-      commentDate: DateTime.now(),
-    ),
-  ];
+  /// ------------------- DECLARATIONS ---------------------------
   final _commentController = TextEditingController();
   bool _heartIsShowing = false;
 
-  PostEntity? _postEntity;
+  late PostEntity _postEntity;
+
+  final _commentFocus = FocusNode();
 
   /// -------------------  GETTERS --------------------------------
   TextEditingController get commentController => _commentController;
 
-  List<CommentEntity> get commentList => _commentList;
-
   bool get heartIsShowing => _heartIsShowing;
 
-  PostEntity? get postEntity => _postEntity;
+  PostEntity get postEntity => _postEntity;
+
+  FocusNode get commentFocus => _commentFocus;
 
   /// -------------------- SETTERS --------------------------------
 
@@ -54,10 +39,40 @@ class PostCommentsState extends ChangeNotifier {
   /// ------------------- FUNCTION -------------------------------
 
   Future<void> likePostWithDoubleTap() async {
-    heartIsShowing = true;
+    _heartIsShowing = true;
+    notifyListeners();
+    _postEntity = postEntity.copyWith(
+      isLiked: true,
+    );
     await Future.delayed(
       const Duration(milliseconds: 600),
     );
-    heartIsShowing = false;
+    _heartIsShowing = false;
+    notifyListeners();
+  }
+
+  void likePost() {
+    _postEntity.isLiked = !_postEntity.isLiked;
+    notifyListeners();
+  }
+
+  void addComment() {
+
+    final comment = CommentEntity(
+      userEntity: UserEntity(username: 'Bernardo'),
+      contentComment: _commentController.text,
+      commentDate: DateTime.now(),
+    );
+
+    _postEntity.comments.add(comment);
+
+    _commentController.clear();
+
+    notifyListeners();
+  }
+
+  void requestFocusComment() {
+    _commentFocus.requestFocus();
+    return;
   }
 }

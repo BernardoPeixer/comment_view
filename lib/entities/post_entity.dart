@@ -6,23 +6,23 @@ class PostEntity {
     this.isLiked = false,
     this.postImage,
     required this.author,
-    this.comments,
+    required this.comments,
     required this.postDate,
   });
 
-  final bool isLiked;
+  bool isLiked;
   final String? postImage;
   final UserEntity author;
-  final List<CommentEntity>? comments;
+  final List<CommentEntity> comments;
   final DateTime postDate;
 
-  PostEntity copyWith(
+  PostEntity copyWith({
     bool? isLiked,
     String? postImage,
     UserEntity? author,
     List<CommentEntity>? comments,
     DateTime? postDate,
-  ) {
+  }) {
     return PostEntity(
       author: author ?? this.author,
       postDate: postDate ?? this.postDate,

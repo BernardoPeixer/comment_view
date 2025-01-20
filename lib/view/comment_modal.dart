@@ -49,9 +49,9 @@ class PostWithComment extends StatelessWidget {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: state.commentList.length,
+                      itemCount: state.postEntity.comments.length,
                       itemBuilder: (context, index) {
-                        final comment = state.commentList[index];
+                        final comment = state.postEntity.comments[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: _SingleComment(
@@ -126,39 +126,43 @@ class _CommentWrite extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(
-              FluentIcons.emoji,
-              size: 24,
-            ),
-            onPressed: () {},
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 8,
-            ),
-          ),
+
           Expanded(
-              child: TextFormBox(
-            controller: state.commentController,
-          )),
+            child: TextFormBox(
+              controller: state.commentController,
+              validator: (value) {
+                if (state.commentController.text.trim().isEmpty) {
+                  return 'Campo não pode ser vazio';
+                }
+                return null;
+              },
+              focusNode: state.commentFocus,
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(
               horizontal: 8,
             ),
           ),
-          TextButtonDefault(
-            text: 'Publicar',
-            style: GoogleFonts.poppins(
-              textStyle: TextStyle(
-                color: state.commentController.text.isEmpty
-                    ? const Color(0xffbfbbbb)
-                    : Colors.blue,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: TextButtonDefault(
+              text: 'Publicar',
+              style: GoogleFonts.poppins(
+                textStyle: TextStyle(
+                  color: state.commentController.text.isEmpty
+                      ? const Color(0xffbfbbbb)
+                      : Colors.blue,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              onPressed: () {
+                state.commentController.text.isNotEmpty
+                    ? state.addComment()
+                    : null;
+              },
             ),
-            onPressed: () {},
           ),
         ],
       ),
@@ -189,15 +193,21 @@ class _ImageSection extends StatelessWidget {
               ),
             ),
           ),
-          if (state.heartIsShowing)
-            Align(
+          if (state.heartIsShowing) ...[
+            AnimatedSize(
+              duration: const Duration(milliseconds: 400),
               alignment: Alignment.center,
               child: Icon(
                 FluentIcons.heart_fill,
-                size: 40,
+                size: 80,
                 color: Colors.red,
               ),
             ),
+          ] else
+            const AnimatedSize(
+                duration: Duration(milliseconds: 400),
+                alignment: Alignment.center,
+                child: SizedBox.shrink()),
         ],
       ),
     );
@@ -284,46 +294,36 @@ class _PostActions extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      (state.postEntity?.isLiked ?? false)
-                          ? FluentIcons.heart_fill
-                          : FluentIcons.heart,
-                      size: 26,
-                      color: (state.postEntity?.isLiked ?? false)
-                          ? Colors.red
-                          : Colors.black,
-                    ),
-                    onPressed: () {},
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6),
-                  ),
-                  const Icon(
-                    FluentIcons.comment,
-                    size: 26,
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6),
-                  ),
-                  const Icon(
-                    FluentIcons.send,
-                    size: 26,
-                  ),
-                ],
+              IconButton(
+                icon: Icon(
+                  (state.postEntity.isLiked)
+                      ? FluentIcons.heart_fill
+                      : FluentIcons.heart,
+                  size: 26,
+                  color: (state.postEntity.isLiked) ? Colors.red : Colors.black,
+                ),
+                onPressed: () {
+                  state.likePost();
+                },
               ),
-              const Icon(
-                FluentIcons.save,
-                size: 26,
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+              ),
+              IconButton(
+                icon: const Icon(
+                  FluentIcons.comment,
+                  size: 26,
+                ),
+                onPressed: () {
+                  state.requestFocusComment();
+                },
               ),
             ],
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: 4),
           ),
           const Text('Há 1 dia'),
         ],
