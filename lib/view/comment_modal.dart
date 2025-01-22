@@ -185,70 +185,65 @@ class _ImageSection extends StatelessWidget {
         children: [
           CarouselSlider(
             options: CarouselOptions(
-              disableCenter: false,
-              enlargeCenterPage: false,
-              enableInfiniteScroll: false,
-              padEnds: false,
-              pageSnapping: true,
-              aspectRatio: 1,
-              autoPlay: false,
-              animateToClosest: true,
-              viewportFraction: 1,
-              onPageChanged: (int actualPage, _) {
-                state.actualPosition = actualPage;
-                state.reloadScreen();
-              }
-            ),
+                disableCenter: false,
+                enlargeCenterPage: false,
+                enableInfiniteScroll: false,
+                padEnds: false,
+                pageSnapping: true,
+                aspectRatio: 1,
+                autoPlay: false,
+                animateToClosest: true,
+                viewportFraction: 1,
+                onPageChanged: (int actualPage, _) {
+                  state.actualPosition = actualPage;
+                  state.reloadScreen();
+                }),
             controller: state.carouselController,
             items: [
-              for(final item in post.postImage ?? [])
-              _ItemSlider(
-                state: state,
-                image:
-                    item
-              ),
+              for (final item in post.postImage ?? [])
+                _ItemSlider(state: state, image: item),
             ],
           ),
-          if(state.actualPosition != 0)
-          Positioned(
-            left: 10,
-            top: 0,
-            bottom: 0,
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () {
-                  state.carouselController.previousPage();
-                },
-                child: const Icon(
-                  material.Icons.arrow_circle_left,
-                  color: Colors.white,
-                  size: 40,
+          if (state.actualPosition != 0)
+            Positioned(
+              left: 10,
+              top: 0,
+              bottom: 0,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    state.carouselController.previousPage();
+                  },
+                  child: const Icon(
+                    material.Icons.arrow_circle_left,
+                    color: Colors.white,
+                    size: 40,
+                  ),
                 ),
               ),
             ),
-          ),
-          if(state.actualPosition != (post.postImage?.length ?? 0) - 1)
-          Positioned(
-            right: 10,
-            top: 0,
-            bottom: 0,
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () {
-                  state.carouselController.nextPage();
-                  state.actualPosition++;
-                  state.reloadScreen();
-                },
-                child: const Icon(
-                  material.Icons.arrow_circle_right,
-                  color: Colors.white,
-                  size: 40,
+          if (state.actualPosition != (post.postImage?.length ?? 0) - 1)
+            Positioned(
+              right: 10,
+              top: 0,
+              bottom: 0,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    state.carouselController.nextPage();
+                    state.actualPosition++;
+                    state.reloadScreen();
+                  },
+                  child: const Icon(
+                    material.Icons.arrow_circle_right,
+                    color: Colors.white,
+                    size: 40,
+                  ),
                 ),
               ),
             ),
-          ),
           if (state.heartIsShowing) ...[
             const AnimatedSize(
               duration: Duration(milliseconds: 400),
@@ -375,12 +370,36 @@ class _SingleComment extends StatelessWidget {
                     vertical: 2,
                   ),
                 ),
-                Text(
-                  '${state.returnDateNumber(commentEntity.commentDate).$2} ${state.returnDateNumber(commentEntity.commentDate).$1}',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      '${state.returnDateNumber(commentEntity.commentDate).$2} ${state.returnDateNumber(commentEntity.commentDate).$1}',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                    ),
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: TextButtonDefault(
+                        text: 'Responder',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                        onPressed: () {
+                          state.onTapAnswerComment(
+                            commentEntity.userEntity,
+                          );
+                          FocusScope.of(context).requestFocus(state.commentFocus);
+                          return;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

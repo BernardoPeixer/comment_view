@@ -116,4 +116,9 @@ class PostCommentsState extends ChangeNotifier {
 
     return (message, quantity);
   }
+
+  void onTapAnswerComment(UserEntity user) {
+    _commentController.text = '@${user.username} ';
+    notifyListeners();
+  }
 }
