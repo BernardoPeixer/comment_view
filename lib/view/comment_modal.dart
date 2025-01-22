@@ -1,8 +1,11 @@
+import 'package:carousel_slider_plus/carousel_slider_plus.dart';
 import 'package:comment_view/entities/comment_entity.dart';
+import 'package:comment_view/entities/post_entity.dart';
 import 'package:comment_view/entities/user_entity.dart';
 import 'package:comment_view/util/circle_user_image.dart';
 import 'package:comment_view/util/text_button_default.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -126,7 +129,6 @@ class _CommentWrite extends StatelessWidget {
       ),
       child: Row(
         children: [
-
           Expanded(
             child: TextFormBox(
               controller: state.commentController,
@@ -176,32 +178,82 @@ class _ImageSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = Provider.of<PostCommentsState>(context);
+    final PostEntity post = state.postEntity;
     return Expanded(
       child: Stack(
-        alignment: Alignment.center,
         fit: StackFit.expand,
         children: [
-          GestureDetector(
-            onDoubleTap: () async {
-              await state.likePostWithDoubleTap();
-            },
-            child: Container(
-              color: Colors.black,
-              child: Image.network(
-                'https://th.bing.com/th/id/OIP.zz9qT2DAH-9GNx6i6lkqiwAAAA?w=274&h=167&c=7&r=0&o=5&dpr=1.3&pid=1.7',
-                fit: BoxFit.fitWidth,
+          CarouselSlider(
+            options: CarouselOptions(
+              disableCenter: false,
+              enlargeCenterPage: false,
+              enableInfiniteScroll: false,
+              padEnds: false,
+              pageSnapping: true,
+              aspectRatio: 1,
+              autoPlay: false,
+              animateToClosest: true,
+              viewportFraction: 1,
+              onPageChanged: (int actualPage, _) {
+                state.actualPosition = actualPage;
+                state.reloadScreen();
+              }
+            ),
+            controller: state.carouselController,
+            items: [
+              for(final item in post.postImage ?? [])
+              _ItemSlider(
+                state: state,
+                image:
+                    item
+              ),
+            ],
+          ),
+          if(state.actualPosition != 0)
+          Positioned(
+            left: 10,
+            top: 0,
+            bottom: 0,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  state.carouselController.previousPage();
+                },
+                child: const Icon(
+                  material.Icons.arrow_circle_left,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+            ),
+          ),
+          if(state.actualPosition != (post.postImage?.length ?? 0) - 1)
+          Positioned(
+            right: 10,
+            top: 0,
+            bottom: 0,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  state.carouselController.nextPage();
+                  state.actualPosition++;
+                  state.reloadScreen();
+                },
+                child: const Icon(
+                  material.Icons.arrow_circle_right,
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
             ),
           ),
           if (state.heartIsShowing) ...[
-            AnimatedSize(
-              duration: const Duration(milliseconds: 400),
+            const AnimatedSize(
+              duration: Duration(milliseconds: 400),
               alignment: Alignment.center,
-              child: Icon(
-                FluentIcons.heart_fill,
-                size: 80,
-                color: Colors.red,
-              ),
+              child: _IconAnimated(),
             ),
           ] else
             const AnimatedSize(
@@ -209,6 +261,71 @@ class _ImageSection extends StatelessWidget {
                 alignment: Alignment.center,
                 child: SizedBox.shrink()),
         ],
+      ),
+    );
+  }
+}
+
+class _ItemSlider extends StatelessWidget {
+  const _ItemSlider({super.key, required this.state, required this.image});
+
+  final PostCommentsState state;
+  final String image;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onDoubleTap: () async {
+        await state.likePostWithDoubleTap();
+      },
+      child: Container(
+        color: Colors.black,
+        child: Image.network(
+          image,
+          fit: BoxFit.fitWidth,
+        ),
+      ),
+    );
+  }
+}
+
+class _IconAnimated extends StatefulWidget {
+  const _IconAnimated();
+
+  @override
+  State<_IconAnimated> createState() => _IconAnimatedState();
+}
+
+class _IconAnimatedState extends State<_IconAnimated>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(milliseconds: 500),
+    vsync: this,
+  )..repeat(reverse: true);
+  late final Animation<AlignmentGeometry> _animation = Tween<AlignmentGeometry>(
+    begin: Alignment.bottomCenter,
+    end: Alignment.center,
+  ).animate(
+    CurvedAnimation(
+      parent: _controller,
+      curve: Curves.decelerate,
+    ),
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlignTransition(
+      alignment: _animation,
+      child: Icon(
+        FluentIcons.heart_fill,
+        size: 80,
+        color: Colors.red,
       ),
     );
   }
@@ -223,6 +340,7 @@ class _SingleComment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = Provider.of<PostCommentsState>(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
@@ -254,11 +372,11 @@ class _SingleComment extends StatelessWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(
-                    vertical: 4,
+                    vertical: 2,
                   ),
                 ),
                 Text(
-                  '${commentEntity.commentDate.day}d',
+                  '${state.returnDateNumber(commentEntity.commentDate).$2} ${state.returnDateNumber(commentEntity.commentDate).$1}',
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 12,
@@ -322,10 +440,11 @@ class _PostActions extends StatelessWidget {
               ),
             ],
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 4),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+                'Há ${state.returnDateNumber(state.postEntity.postDate).$2} ${state.returnDateNumber(state.postEntity.postDate).$1}'),
           ),
-          const Text('Há 1 dia'),
         ],
       ),
     );

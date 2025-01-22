@@ -1,3 +1,4 @@
+import 'package:carousel_slider_plus/carousel_controller.dart';
 import 'package:comment_view/entities/comment_entity.dart';
 import 'package:comment_view/entities/user_entity.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -20,6 +21,10 @@ class PostCommentsState extends ChangeNotifier {
 
   final _commentFocus = FocusNode();
 
+  final _carouselController = CarouselSliderController();
+
+  int actualPosition = 0;
+
   /// -------------------  GETTERS --------------------------------
   TextEditingController get commentController => _commentController;
 
@@ -28,6 +33,8 @@ class PostCommentsState extends ChangeNotifier {
   PostEntity get postEntity => _postEntity;
 
   FocusNode get commentFocus => _commentFocus;
+
+  CarouselSliderController get carouselController => _carouselController;
 
   /// -------------------- SETTERS --------------------------------
 
@@ -57,7 +64,6 @@ class PostCommentsState extends ChangeNotifier {
   }
 
   void addComment() {
-
     final comment = CommentEntity(
       userEntity: UserEntity(username: 'Bernardo'),
       contentComment: _commentController.text,
@@ -71,8 +77,43 @@ class PostCommentsState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void reloadScreen() {
+    notifyListeners();
+  }
+
   void requestFocusComment() {
     _commentFocus.requestFocus();
     return;
+  }
+
+  (String?, int?) returnDateNumber(DateTime date) {
+    final dateNow = DateTime.now();
+    final difference = date.difference(dateNow);
+    final duration = difference.abs();
+
+    String? message;
+    int? quantity;
+
+    if (duration.inDays > 365) {
+      quantity = (duration.inDays / 365).floor();
+      message = quantity == 1 ? 'ano' : 'anos';
+    } else if (duration.inDays > 30) {
+      quantity = (duration.inDays / 30).floor();
+      message = quantity == 1 ? 'mes' : 'meses';
+    } else if (duration.inDays > 0) {
+      quantity = duration.inDays;
+      message = quantity == 1 ? 'dia' : 'dias';
+    } else if (duration.inHours > 0) {
+      quantity = duration.inHours;
+      message = quantity == 1 ? 'hora' : 'horas';
+    } else if (duration.inMinutes > 0) {
+      quantity = duration.inMinutes;
+      message = quantity == 1 ? 'minuto' : 'minutos';
+    } else {
+      quantity = duration.inSeconds;
+      message = quantity == 1 ? 'segundo' : 'segundos';
+    }
+
+    return (message, quantity);
   }
 }

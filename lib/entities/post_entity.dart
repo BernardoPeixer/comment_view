@@ -11,14 +11,14 @@ class PostEntity {
   });
 
   bool isLiked;
-  final String? postImage;
+  final List<String>? postImage;
   final UserEntity author;
   final List<CommentEntity> comments;
   final DateTime postDate;
 
   PostEntity copyWith({
     bool? isLiked,
-    String? postImage,
+    List<String>? postImage,
     UserEntity? author,
     List<CommentEntity>? comments,
     DateTime? postDate,

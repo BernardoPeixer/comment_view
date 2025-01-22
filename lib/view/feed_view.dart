@@ -24,29 +24,36 @@ class FeedView extends StatelessWidget {
                     create: (context) => PostCommentsState(
                       post: PostEntity(
                         author: UserEntity(username: 'Bernardo'),
-                        postDate: DateTime.now(),
+                        postDate: DateTime(2024),
                         isLiked: false,
+                        postImage: [
+                          "https://www.w3schools.com/w3images/lights.jpg",
+                          "https://www.w3schools.com/w3images/forest.jpg",
+                          "https://www.w3schools.com/w3images/mountains.jpg",
+                          "https://www.w3schools.com/w3images/nature.jpg",
+                          "https://www.w3schools.com/w3images/snow.jpg",
+                        ],
                         comments: [
                           CommentEntity(
                             contentComment: 'Que postagem motivadora!',
                             userEntity: UserEntity(
                               username: 'LINCE TECH',
                             ),
-                            commentDate: DateTime.now(),
+                            commentDate: DateTime(2023, 6, 12),
                           ),
                           CommentEntity(
                             contentComment: 'Muito legal!',
                             userEntity: UserEntity(
                               username: 'Paytrack',
                             ),
-                            commentDate: DateTime.now(),
+                            commentDate: DateTime(2022, 8, 12),
                           ),
                           CommentEntity(
                             contentComment: 'Uau!',
                             userEntity: UserEntity(
                               username: 'SYYNC',
                             ),
-                            commentDate: DateTime.now(),
+                            commentDate: DateTime(2024, 2, 12),
                           ),
                         ],
                       ),
